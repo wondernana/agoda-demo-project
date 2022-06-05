@@ -6,7 +6,9 @@ import io.qameta.allure.Attachment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URL;
 
 public class AllureAttachments {
     public static final Logger LOGGER = LoggerFactory.getLogger(AllureAttachments.class);
@@ -31,18 +33,20 @@ public class AllureAttachments {
     }
 
     public static void addVideo(String sessionId) {
-        File videoUrl = new File(DriverUtils.getVideoUrl(sessionId));
+        URL videoUrl = DriverUtils.getVideoUrl(sessionId);
         for (int i = 0; i < 3; i++) {
-            try (InputStream fileInputStream = new FileInputStream(videoUrl)){
-                Allure.addAttachment("Some video", "video/mp4", fileInputStream, "mp4");
-            } catch (FileNotFoundException e) {
-                // waiting for video file to be processed
-                LOGGER.warn("[ALLURE VIDEO NOT FOUND] Cant find allure video, {}", videoUrl);
-                e.printStackTrace();
-                Selenide.sleep(1000);
-            } catch (IOException e) {
-                LOGGER.warn("[ALLURE VIDEO ATTACHMENT ERROR] Cant attach allure video, {}", videoUrl);
-                e.printStackTrace();
+            if (videoUrl != null) {
+                try {
+                    Allure.addAttachment("Some video", "video/mp4", videoUrl.openStream(), "mp4");
+                    break;
+                } catch (FileNotFoundException e) {
+                    // waiting for video file to be processed
+                    LOGGER.warn("[ALLURE VIDEO ATTACHMENT ERROR] Cant find allure video, {}", videoUrl);
+                    Selenide.sleep(1000);
+                } catch (IOException e) {
+                    LOGGER.warn("[ALLURE VIDEO ATTACHMENT ERROR] Cant attach allure video, {}", videoUrl);
+                    e.printStackTrace();
+                }
             }
         }
     }
