@@ -8,6 +8,8 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 import static com.codeborne.selenide.WebDriverRunner.getWebDriver;
@@ -29,8 +31,16 @@ public class DriverUtils {
         return getWebDriver().getPageSource().getBytes(StandardCharsets.UTF_8);
     }
 
-    public static String getVideoUrl(String sessionId) {
-        return Project.config.videoStorage() + sessionId + ".mp4";
+    public static URL getVideoUrl(String sessionId) {
+        String videoUrl = Project.config.videoStorage() + sessionId + ".mp4";
+
+        try {
+            return new URL(videoUrl);
+        } catch (MalformedURLException e) {
+            LOGGER.warn("[ALLURE VIDEO ATTACHMENT ERROR] Wrong test video url, {}", videoUrl);
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static String getConsoleLogs() { // todo refactor
