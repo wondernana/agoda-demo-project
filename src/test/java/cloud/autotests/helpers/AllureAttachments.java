@@ -1,10 +1,12 @@
 package cloud.autotests.helpers;
 
+import com.codeborne.selenide.Selenide;
 import io.qameta.allure.Attachment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -40,20 +42,25 @@ public class AllureAttachments {
     private static byte[] getFileAsBytes(URL fileUrl) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-        try (InputStream stream = fileUrl.openStream()){
-            byte[] chunk = new byte[4096];
-            int bytesRead;
+        for (int i = 0; i < 3; i++) {
+            try (InputStream stream = fileUrl.openStream()) {
+                byte[] chunk = new byte[4096];
+                int bytesRead;
 
-            while ((bytesRead = stream.read(chunk)) > 0) {
-                outputStream.write(chunk, 0, bytesRead);
+                while ((bytesRead = stream.read(chunk)) > 0) {
+                    outputStream.write(chunk, 0, bytesRead);
+                }
+                break;
+            } catch (FileNotFoundException e) {
+                // waiting for video file to be processed
+                LOGGER.warn("[ALLURE VIDEO NOT FOUND] Cant find allure video, {}", fileUrl);
+                e.printStackTrace();
+                Selenide.sleep(1000);
+            } catch (IOException e) {
+                LOGGER.warn("[ALLURE VIDEO ATTACHMENT ERROR] Cant attach allure video, {}", fileUrl);
+                e.printStackTrace();
+                return null;
             }
-
-        } catch (IOException e) {
-            LOGGER.warn("[ALLURE VIDEO ATTACHMENT ERROR] Cant attach allure video, {}", fileUrl);
-            e.printStackTrace();
-            return null;
-        }
-
-        return outputStream.toByteArray();
+        } return outputStream.toByteArray();
     }
 }
