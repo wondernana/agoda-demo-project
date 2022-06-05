@@ -10,6 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLConnection;
 
 public class AllureAttachments {
     public static final Logger LOGGER = LoggerFactory.getLogger(AllureAttachments.class);
@@ -41,26 +42,36 @@ public class AllureAttachments {
 
     private static byte[] getFileAsBytes(URL fileUrl) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        URLConnection connection = null;
+        try {
+            connection = fileUrl.openConnection();
+            connection.connect();
+        } catch (IOException e) {
+            LOGGER.warn("[ALLURE VIDEO NOT FOUND] Cant establish url connection, {}", fileUrl);
+            e.printStackTrace();
+            return null;
+        }
+        if (connection != null) {
+            for (int i = 0; i < 3; i++) {
+                try (InputStream stream = connection.getInputStream()) {
+                    byte[] chunk = new byte[4096];
+                    int bytesRead;
 
-        for (int i = 0; i < 3; i++) {
-            try (InputStream stream = fileUrl.openStream()) {
-                byte[] chunk = new byte[4096];
-                int bytesRead;
-
-                while ((bytesRead = stream.read(chunk)) > 0) {
-                    outputStream.write(chunk, 0, bytesRead);
+                    while ((bytesRead = stream.read(chunk)) > 0) {
+                        outputStream.write(chunk, 0, bytesRead);
+                    }
+                    break;
+                } catch (FileNotFoundException e) {
+                    // waiting for video file to be processed
+                    LOGGER.warn("[ALLURE VIDEO NOT FOUND] Cant find allure video, {}", fileUrl);
+                    e.printStackTrace();
+                    Selenide.sleep(1000);
+                } catch (IOException e) {
+                    LOGGER.warn("[ALLURE VIDEO ATTACHMENT ERROR] Cant attach allure video, {}", fileUrl);
+                    e.printStackTrace();
+                    return null;
                 }
-                break;
-            } catch (FileNotFoundException e) {
-                // waiting for video file to be processed
-                LOGGER.warn("[ALLURE VIDEO NOT FOUND] Cant find allure video, {}", fileUrl);
-                e.printStackTrace();
-                Selenide.sleep(1000);
-            } catch (IOException e) {
-                LOGGER.warn("[ALLURE VIDEO ATTACHMENT ERROR] Cant attach allure video, {}", fileUrl);
-                e.printStackTrace();
-                return null;
             }
         } return outputStream.toByteArray();
-    }
+    } 
 }
