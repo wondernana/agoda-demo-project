@@ -1,10 +1,12 @@
 package cloud.autotests.helpers;
 
+import com.google.common.io.Files;
 import io.qameta.allure.Allure;
 import io.qameta.allure.Attachment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,25 +37,12 @@ public class AllureAttachments {
     }
 
     public static void addVideo(String sessionId) {
-        URL videoUrl = DriverUtils.getVideoUrl(sessionId);
-        if (videoUrl != null) {
-            InputStream videoInputStream = null;
-            sleep(1000);
-
-            for (int i = 0; i < 10; i++) {
-                try {
-                    videoInputStream = videoUrl.openStream();
-                    break;
-                } catch (FileNotFoundException e) {
-                    sleep(1000);
-                } catch (IOException e) {
-                    LOGGER.warn("[ALLURE VIDEO ATTACHMENT ERROR] Cant attach allure video, {}", videoUrl);
-                    e.printStackTrace();
-                }
-            }
-            Allure.addAttachment("Video", "video/mp4", videoInputStream, "mp4");
+        File videoUrl = new File(DriverUtils.getVideoUrl(sessionId));
+        try {
+        Allure.addAttachment("Some video", "video/mp4", Files.asByteSource(videoUrl).openStream(), "mp4");
+        } catch (IOException e) {
+            LOGGER.warn("[ALLURE VIDEO ATTACHMENT ERROR] Cant attach allure video, {}", videoUrl);
+            e.printStackTrace();
         }
     }
-
-
 }
