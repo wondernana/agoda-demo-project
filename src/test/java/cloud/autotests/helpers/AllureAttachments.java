@@ -1,5 +1,6 @@
 package cloud.autotests.helpers;
 
+import com.codeborne.selenide.Selenide;
 import com.google.common.io.Files;
 import io.qameta.allure.Allure;
 import io.qameta.allure.Attachment;
@@ -9,10 +10,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-
-import static com.codeborne.selenide.Selenide.sleep;
 
 public class AllureAttachments {
     public static final Logger LOGGER = LoggerFactory.getLogger(AllureAttachments.class);
@@ -38,11 +35,16 @@ public class AllureAttachments {
 
     public static void addVideo(String sessionId) {
         File videoUrl = new File(DriverUtils.getVideoUrl(sessionId));
-        try {
-        Allure.addAttachment("Some video", "video/mp4", Files.asByteSource(videoUrl).openStream(), "mp4");
-        } catch (IOException e) {
-            LOGGER.warn("[ALLURE VIDEO ATTACHMENT ERROR] Cant attach allure video, {}", videoUrl);
-            e.printStackTrace();
+        for (int i = 0; i < 3; i++) {
+            try {
+                Allure.addAttachment("Some video", "video/mp4", Files.asByteSource(videoUrl).openStream(), "mp4");
+            } catch (FileNotFoundException e) {
+                // waiting for video file to be processed
+                Selenide.sleep(1000);
+            } catch (IOException e) {
+                LOGGER.warn("[ALLURE VIDEO ATTACHMENT ERROR] Cant attach allure video, {}", videoUrl);
+                e.printStackTrace();
+            }
         }
     }
 }
