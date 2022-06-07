@@ -1,8 +1,8 @@
 # agoda-demo-project
-Demo test automation framework
+Stack: Java | Junit5 | Selenide | Rest Assured | Allure | Gradle
 
 ## Test Execution
-### Run tests with Gradle & JUnit5:
+### To execute tests run:
 ```
 ./gradlew clean test
 ```
@@ -17,7 +17,7 @@ Demo test automation framework
 <a target="_blank" href="https://jenkins.autotests.cloud/job/agoda-demo/">agoda-demo (open to view)</a>
 
 ## Test Results
-### Results can be viewed in Allure Report:
+### Results are generated in Allure Report:
 
 <img width="1440" alt="Screenshot 2022-06-05 at 20 32 17" src="https://user-images.githubusercontent.com/86495466/172069240-b28a914c-35eb-41ae-80b1-e3cedc6335f1.png">
 <img width="1440" alt="Screenshot 2022-06-05 at 02 30 53" src="https://user-images.githubusercontent.com/86495466/172069242-ad377f0e-0df5-4eb4-9825-49f604a0ee4b.png">
